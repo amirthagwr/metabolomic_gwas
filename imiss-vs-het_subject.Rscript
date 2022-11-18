@@ -1,17 +1,17 @@
 
-#Script to check excess heterozygosity and missingness in child subjects
+#Script to check excess heterozygosity and missingness in subjects
 #Description: This script estimates the mean heterozygosity in order to detect subjects exceeding 2 std dev from mean heterozygosity and missingness of >10% with a plot showing the cutoffs. 
 
 
-.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-redhat-linux-gnu-library/3.3/") )
-.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-pc-linux-gnu-library/3.4/") )
-.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-pc-linux-gnu-library/3.5/") )
+.libPaths( c( .libPaths(), "/global/home/xxx/R/x86_64-redhat-linux-gnu-library/3.3/") )
+.libPaths( c( .libPaths(), "/global/home/xxx/R/x86_64-pc-linux-gnu-library/3.4/") )
+.libPaths( c( .libPaths(), "/global/home/xxx/R/x86_64-pc-linux-gnu-library/3.5/") )
 
 
 
-imiss=read.table("child_only_sex_removed_multi_missingness_runs.imiss",h=T)
+imiss=read.table("Subjects_sex_removed_multi_missingness_runs.imiss",h=T)
 imiss$logF_MISS = log10(imiss[,6])
-het=read.table("child_only_sex_removed_multi_heterzygosity.het",h=T)
+het=read.table("Subjects_sex_removed_multi_heterzygosity.het",h=T)
 het$meanHet = (het$N.NM. - het$O.HOM.)/het$N.NM.
 colors  <- densCols(imiss$logF_MISS,het$meanHet)
 pdf("child_only_multi.imiss-vs-het_2sd.pdf")
