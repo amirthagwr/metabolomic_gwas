@@ -1,0 +1,44 @@
+
+#Script to check excess heterozygosity and missingness in child subjects
+#Description: This script estimates the mean heterozygosity in order to detect subjects exceeding 2 std dev from mean heterozygosity and missingness of >10% with a plot showing the cutoffs. 
+
+
+.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-redhat-linux-gnu-library/3.3/") )
+.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-pc-linux-gnu-library/3.4/") )
+.libPaths( c( .libPaths(), "/global/home/hpc4094/R/x86_64-pc-linux-gnu-library/3.5/") )
+
+
+
+imiss=read.table("child_only_sex_removed_multi_missingness_runs.imiss",h=T)
+imiss$logF_MISS = log10(imiss[,6])
+het=read.table("child_only_sex_removed_multi_heterzygosity.het",h=T)
+het$meanHet = (het$N.NM. - het$O.HOM.)/het$N.NM.
+colors  <- densCols(imiss$logF_MISS,het$meanHet)
+pdf("child_only_multi.imiss-vs-het_2sd.pdf")
+plot(imiss$logF_MISS,het$meanHet, col=colors, xlim=c(-3,0),ylim=c(0,0.5),pch=20, xlab="Proportion of missing genotypes", ylab="Heterozygosity rate",axes=F)
+axis(2,at=c(0,0.05,0.10,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5),tick=T)
+axis(1,at=c(-3,-2,-1,0),labels=c(0.001,0.01,0.1,1))
+abline(h=mean(het$meanHet)-(2*sd(het$meanHet)),col="RED",lty=2)
+abline(h=mean(het$meanHet)+(2*sd(het$meanHet)),col="RED",lty=2)
+abline(v=-1, col="RED", lty=2)
+write.table(het, "mean_heterozygosity_child_only_multi_subjects_before_mind.txt",quote=F, sep="\t")
+dev.off()
+
+cutoff1<-mean(het$meanHet)-(2*sd(het$meanHet))
+cutoff2<-mean(het$meanHet)+(2*sd(het$meanHet))
+
+cutoff1
+cutoff2
+
+excess_het <- het[which(het$meanHet < cutoff1 | het$meanHet > cutoff2),]
+excess_missing <- imiss[which(imiss$F_MISS >0.10),]
+
+extract_id_het <- names(excess_het) %in% c("FID", "IID")
+excess_het_ID <- excess_het[extract_id_het]
+
+extract_id_miss <- names(excess_missing) %in% c("FID", "IID")
+excess_miss_ID <- excess_missing[extract_id_miss]
+ 
+combine_IDs <- rbind(excess_het_ID, excess_miss_ID)
+uniq_IDs <-unique(combine_IDs)
+write.table(uniq_IDs, "fail_imiss_heterozygosity_subjects.txt",quote=F, sep="\t", row.names = F)
